@@ -15,12 +15,19 @@ void setup () {
     height = input.height;
     surface.setSize(width*pixelsize, height*pixelsize);
     input.filter(GRAY);
-    output = errorDiffusion(input, 60);
+    output = floydSteinberg(input, 128);
     path = neighborPathFromImage(output);
+    // scale input back up
+    input.resize(width*pixelsize, 0);
 }
 
 void draw () {
-    animatedPath(path, pixelsize, 20);
+    if (step < path.size() - 1){
+        image(input, 0,0);
+    } else {
+        background(255);
+    }
+    animatedPath(path, pixelsize, 80);
 }
 
 
@@ -36,7 +43,7 @@ void displayPixels (PImage image, int pixelwidth) {
 }
 
 void animatedPath(ArrayList<Point> points, float scale, int speed) {
-    stroke(0);
+    stroke(255, 0, 0);
     for (int i=0; i<step; i++) {
         Point from = path.get(i);
         Point to = path.get(i+1);
@@ -72,6 +79,33 @@ PImage errorDiffusion (PImage in, int threshold) {
         } else {
             out.pixels[i] = color(0);
             err = 255 - brightness(in.pixels[i]);
+        }
+    }
+    return out;
+}
+
+PImage floydSteinberg (PImage in, int threshold) {
+    // the cooler errorDiffusion
+    // make a copy of in
+    PImage out = in.get(0, 0, in.width, in.height);
+    out.loadPixels();
+    float tmp;
+    float err;
+    color newcolor;
+    for (int y=0; y<out.height-1; y++) {
+        for (int x=0; x<out.width-1; x++) {
+            tmp = brightness(out.pixels[x + y * out.width]);
+            if (tmp > threshold) {
+                newcolor = color(255);
+            } else {
+                newcolor = color(0);
+            }
+            err = tmp - brightness(newcolor);
+            out.pixels[x + y * out.width] = newcolor;
+            out.pixels[x+1 + y * out.width] += err * 7/16;
+            out.pixels[x-1 + (y+1) * out.width] += err * 3/16;
+            out.pixels[x + (y+1) * out.width] += err * 5/16;
+            out.pixels[x+1 + (y+1) * out.width] += err * 1/16;
         }
     }
     return out;
