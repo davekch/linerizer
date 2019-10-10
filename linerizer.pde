@@ -7,12 +7,13 @@ void setup () {
     size(50, 50);
     surface.setResizable(true);
     input = loadImage("test.jpg");
-    width = 150;
+    width = 100;
     input.resize(width, 0);
     height = input.height;
     surface.setSize(width*pixelsize, height*pixelsize);
     input.filter(GRAY);
     output = errorDiffusion(input, 80);
+    ArrayList<Point> path = neighborPathFromImage(output);
 }
 
 void draw () {
@@ -48,4 +49,55 @@ PImage errorDiffusion (PImage in, int threshold) {
         }
     }
     return out;
+}
+
+ArrayList<Point> neighborPathFromImage (PImage img) {
+    // get all black points
+    ArrayList<Point> points = new ArrayList<Point>();
+    for (int y=0; y<img.height; y++) {
+        for (int x=0; x<img.width; x++) {
+            if (brightness(img.pixels[x + y*img.width]) == 255) {
+                points.add(new Point(x, y));
+            }
+        }
+    }
+    // construct path through nearest neighbors
+    Point start = points.get(0);
+    points.remove(0);
+    return closestNeighborPath(start, points, new ArrayList<Point>());
+}
+
+ArrayList<Point> closestNeighborPath (Point point, ArrayList<Point> pointList, ArrayList<Point> path) {
+    // returns the list of points folling the nearest neighbor
+    // using linear search
+    if (pointList.size() == 0) {
+        return path;
+    }
+
+    int min = point.square_distance(pointList.get(0));
+    int neighborIndex = 0;
+    for (int i=0; i<pointList.size(); i++) {
+        int dist = point.square_distance(pointList.get(i));
+        if (dist < min) {
+            min = dist;
+            neighborIndex = i;
+        }
+    }
+    Point neighbor = pointList.get(neighborIndex);
+    pointList.remove(neighborIndex);
+    path.add(neighbor);
+    return closestNeighborPath(neighbor, pointList, path);
+}
+
+class Point {
+    int x, y;
+
+    Point (int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    int square_distance (Point p) {
+        return (x - p.x)*(x - p.x) + (y - p.y)*(y - p.y);
+    }
 }
