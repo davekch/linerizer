@@ -1,25 +1,24 @@
 PImage input;
 PImage output;
 int width, height;
-int pixelsize = 5;
+int pixelsize = 3;
 ArrayList<Point> path;
 
 void setup () {
     size(50, 50);
     surface.setResizable(true);
     input = loadImage("test.jpg");
-    width = 90;
+    width = 300;
     input.resize(width, 0);
     height = input.height;
     surface.setSize(width*pixelsize, height*pixelsize);
     input.filter(GRAY);
-    output = errorDiffusion(input, 80);
+    output = errorDiffusion(input, 60);
     path = neighborPathFromImage(output);
-    System.out.println("done");
 }
 
 void draw () {
-    drawPath(path, 5);
+    drawPath(path, pixelsize);
 }
 
 
@@ -67,37 +66,37 @@ ArrayList<Point> neighborPathFromImage (PImage img) {
     ArrayList<Point> points = new ArrayList<Point>();
     for (int y=0; y<img.height; y++) {
         for (int x=0; x<img.width; x++) {
-            if (brightness(img.pixels[x + y*img.width]) == 255) {
+            if (brightness(img.pixels[x + y*img.width]) == 0) {
                 points.add(new Point(x, y));
             }
         }
     }
     // construct path through nearest neighbors
-    Point start = points.get(0);
-    points.remove(0);
-    return closestNeighborPath(start, points, new ArrayList<Point>());
+    return closestNeighborPath(points);
 }
 
-ArrayList<Point> closestNeighborPath (Point point, ArrayList<Point> pointList, ArrayList<Point> path) {
+ArrayList<Point> closestNeighborPath (ArrayList<Point> pointList) {
     // returns the list of points folling the nearest neighbor
     // using linear search
-    if (pointList.size() == 0) {
-        return path;
-    }
-
-    int min = point.square_distance(pointList.get(0));
-    int neighborIndex = 0;
-    for (int i=0; i<pointList.size(); i++) {
-        int dist = point.square_distance(pointList.get(i));
-        if (dist < min) {
-            min = dist;
-            neighborIndex = i;
+    ArrayList<Point> path = new ArrayList<Point>();
+    Point current = pointList.get(0);
+    pointList.remove(0);
+    while (pointList.size() > 0) {
+        int min = current.square_distance(pointList.get(0));
+        int neighborIndex = 0;
+        for (int i=0; i<pointList.size()-1; i++) {
+            int dist = current.square_distance(pointList.get(i));
+            if (dist < min) {
+                min = dist;
+                neighborIndex = i;
+            }
         }
+        Point neighbor = pointList.get(neighborIndex);
+        pointList.remove(neighborIndex);
+        path.add(neighbor);
+        current = neighbor;
     }
-    Point neighbor = pointList.get(neighborIndex);
-    pointList.remove(neighborIndex);
-    path.add(neighbor);
-    return closestNeighborPath(neighbor, pointList, path);
+    return path;
 }
 
 class Point {
