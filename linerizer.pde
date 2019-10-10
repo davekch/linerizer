@@ -3,6 +3,8 @@ PImage output;
 int width, height;
 int pixelsize = 3;
 ArrayList<Point> path;
+// stuff for animation
+int step = 1;
 
 void setup () {
     size(50, 50);
@@ -18,7 +20,7 @@ void setup () {
 }
 
 void draw () {
-    displayPath(path, pixelsize);
+    animatedPath(path, pixelsize, 20);
 }
 
 
@@ -30,6 +32,20 @@ void displayPixels (PImage image, int pixelwidth) {
             fill(image.pixels[loc]);
             rect(x*pixelwidth, y*pixelwidth, pixelwidth, pixelwidth);
         }
+    }
+}
+
+void animatedPath(ArrayList<Point> points, float scale, int speed) {
+    stroke(0);
+    for (int i=0; i<step; i++) {
+        Point from = path.get(i);
+        Point to = path.get(i+1);
+        line(from.x*pixelsize, from.y*pixelsize, to.x*pixelsize, to.y*pixelsize);
+    }
+    if (!(step + speed > path.size()-1)) {
+        step += speed;
+    } else {
+        step = path.size() - 1;
     }
 }
 
