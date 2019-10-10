@@ -2,22 +2,24 @@ PImage input;
 PImage output;
 int width, height;
 int pixelsize = 5;
+ArrayList<Point> path;
 
 void setup () {
     size(50, 50);
     surface.setResizable(true);
     input = loadImage("test.jpg");
-    width = 100;
+    width = 90;
     input.resize(width, 0);
     height = input.height;
     surface.setSize(width*pixelsize, height*pixelsize);
     input.filter(GRAY);
     output = errorDiffusion(input, 80);
-    ArrayList<Point> path = neighborPathFromImage(output);
+    path = neighborPathFromImage(output);
+    System.out.println("done");
 }
 
 void draw () {
-    displayPixels(output, pixelsize);
+    drawPath(path, 5);
 }
 
 
@@ -29,6 +31,15 @@ void displayPixels (PImage image, int pixelwidth) {
             fill(image.pixels[loc]);
             rect(x*pixelwidth, y*pixelwidth, pixelwidth, pixelwidth);
         }
+    }
+}
+
+void drawPath (ArrayList<Point> points, float scale) {
+    stroke(0);
+    for (int i=0; i<points.size()-1; i++) {
+        Point from = points.get(i);
+        Point to = points.get(i+1);
+        line(from.x*scale, from.y*scale, to.x*scale, to.y*scale);
     }
 }
 
