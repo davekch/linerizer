@@ -18,7 +18,7 @@ void setup () {
 }
 
 void draw () {
-    drawPath(path, pixelsize);
+    displayPath(path, pixelsize);
 }
 
 
@@ -33,7 +33,7 @@ void displayPixels (PImage image, int pixelwidth) {
     }
 }
 
-void drawPath (ArrayList<Point> points, float scale) {
+void displayPath (ArrayList<Point> points, float scale) {
     stroke(0);
     for (int i=0; i<points.size()-1; i++) {
         Point from = points.get(i);
