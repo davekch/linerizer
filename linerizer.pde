@@ -10,14 +10,16 @@ void setup () {
     size(50, 50);
     surface.setResizable(true);
     input = loadImage("test.jpg");
+    // make a copy of output
+    output = input.get(0, 0, input.width, input.height);
     width = 300;
-    input.resize(width, 0);
-    height = input.height;
+    output.resize(width, 0);
+    height = output.height;
     surface.setSize(width*pixelsize, height*pixelsize);
-    input.filter(GRAY);
-    output = floydSteinberg(input, 128);
+    output.filter(GRAY);
+    floydSteinberg(output, 128);
     path = neighborPathFromImage(output);
-    // scale input back up
+    // scale input
     input.resize(width*pixelsize, 0);
 }
 
@@ -84,10 +86,8 @@ PImage errorDiffusion (PImage in, int threshold) {
     return out;
 }
 
-PImage floydSteinberg (PImage in, int threshold) {
+void floydSteinberg (PImage out, int threshold) {
     // the cooler errorDiffusion
-    // make a copy of in
-    PImage out = in.get(0, 0, in.width, in.height);
     out.loadPixels();
     float tmp;
     float err;
@@ -108,7 +108,6 @@ PImage floydSteinberg (PImage in, int threshold) {
             out.pixels[x+1 + (y+1) * out.width] += err * 1/16;
         }
     }
-    return out;
 }
 
 ArrayList<Point> neighborPathFromImage (PImage img) {
