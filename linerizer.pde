@@ -1,4 +1,5 @@
 PImage input;
+PImage prepared;
 PImage output;
 int width, height;
 int pixelsize = 3;
@@ -9,34 +10,35 @@ int step = 1;
 void setup () {
     size(50, 50);
     surface.setResizable(true);
-    input = loadImage("test.jpg");
-    // make a copy of output
-    output = input.get(0, 0, input.width, input.height);
+    input = loadImage("test2.jpg");
+    // make a copy of input
+    prepared = input.get(0, 0, input.width, input.height);
     // determine size
     if (input.height <= input.width) {
         width = 300;
-        output.resize(width, 0);
-        height = output.height;
+        prepared.resize(width, 0);
+        height = prepared.height;
     } else {
         height = 300;
-        output.resize(0, height);
-        width = output.width;
+        prepared.resize(0, height);
+        width = prepared.width;
     }
     surface.setSize(width*pixelsize, height*pixelsize);
-    output.filter(GRAY);
-    floydSteinberg(output, 128);
+    prepared.filter(GRAY);
+    output = floydSteinberg(prepared, 128);
     path = neighborPathFromImage(output);
     // scale input
     input.resize(width*pixelsize, 0);
 }
 
 void draw () {
-    if (step < path.size() - 1){
-        image(input, 0,0);
-    } else {
-        background(255);
-    }
-    animatedPath(path, pixelsize, 80);
+    // if (step < path.size() - 1){
+    //     image(input, 0,0);
+    // } else {
+    //     background(255);
+    // }
+    // animatedPath(path, pixelsize, 80);
+    displayPath(path, pixelsize);
 }
 
 
@@ -66,6 +68,7 @@ void animatedPath(ArrayList<Point> points, float scale, int speed) {
 }
 
 void displayPath (ArrayList<Point> points, float scale) {
+    background(255);
     stroke(0);
     for (int i=0; i<points.size()-1; i++) {
         Point from = points.get(i);
@@ -93,8 +96,10 @@ PImage errorDiffusion (PImage in, int threshold) {
     return out;
 }
 
-void floydSteinberg (PImage out, int threshold) {
+PImage floydSteinberg (PImage in, int threshold) {
     // the cooler errorDiffusion
+    // copy input image
+    PImage out = in.get(0, 0, in.width, in.height);
     out.loadPixels();
     float tmp;
     float err;
@@ -115,6 +120,7 @@ void floydSteinberg (PImage out, int threshold) {
             out.pixels[x+1 + (y+1) * out.width] += err * 1/16;
         }
     }
+    return out;
 }
 
 ArrayList<Point> neighborPathFromImage (PImage img) {
