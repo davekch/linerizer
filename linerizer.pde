@@ -6,7 +6,9 @@ int pixelsize = 3;
 ArrayList<Point> path;
 // stuff for animation
 int step = 1;
+int speed = 1000;
 boolean inverted = false;
+boolean readyToDraw = true;
 
 void setup () {
     size(50, 50);
@@ -27,7 +29,7 @@ void setup () {
     surface.setSize(width*pixelsize, height*pixelsize);
     prepared.filter(GRAY);
     output = floydSteinberg(prepared, 128);
-    path = neighborPathFromImage(output);
+    neighborPathFromImage();
     // scale input
     input.resize(width*pixelsize, 0);
 }
@@ -42,7 +44,9 @@ void draw () {
             background(255);
         }
     }
-    animatedPath(path, pixelsize, 120);
+    if (readyToDraw) {
+        animatedPath(path, pixelsize, speed);
+    }
     // displayPath(path, pixelsize);
 }
 
@@ -51,7 +55,7 @@ void mouseClicked () {
     step = 1;
     int threshold = (int) map(mouseX, 0, input.width, 0, 255);
     output = floydSteinberg(prepared, threshold);
-    path = neighborPathFromImage(output);
+    thread("neighborPathFromImage");
 }
 
 
@@ -136,13 +140,14 @@ PImage floydSteinberg (PImage in, int threshold) {
     return out;
 }
 
-ArrayList<Point> neighborPathFromImage (PImage img) {
+void neighborPathFromImage () {
     int col;
     if (inverted) {
         col = 255;
     } else {
         col = 0;
     }
+    PImage img = output;
     // get all black points
     ArrayList<Point> points = new ArrayList<Point>();
     for (int y=0; y<img.height; y++) {
@@ -153,13 +158,16 @@ ArrayList<Point> neighborPathFromImage (PImage img) {
         }
     }
     // construct path through nearest neighbors
-    return closestNeighborPath(points);
+    closestNeighborPath(points);
 }
 
-ArrayList<Point> closestNeighborPath (ArrayList<Point> pointList) {
-    // returns the list of points folling the nearest neighbor
+void closestNeighborPath (ArrayList<Point> pointList) {
+    // writes the list of points folling the nearest neighbor
+    // to global path (ArrayList<Point>) variable
     // using linear search
-    ArrayList<Point> path = new ArrayList<Point>();
+    // don't start the animated draw, because path is empty right now
+    readyToDraw = false;
+    path = new ArrayList<Point>();
     Point current = pointList.get(0);
     pointList.remove(0);
     while (pointList.size() > 0) {
@@ -176,8 +184,10 @@ ArrayList<Point> closestNeighborPath (ArrayList<Point> pointList) {
         pointList.remove(neighborIndex);
         path.add(neighbor);
         current = neighbor;
+        // as soon as there are more than speed points in path,
+        // it's safe to start drawing them
+        if ((path.size() > speed) && !readyToDraw) readyToDraw = true;
     }
-    return path;
 }
 
 class Point {
