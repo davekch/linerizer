@@ -77,10 +77,15 @@ void displayPixels (PImage image, int pixelwidth) {
 void animatedPath(ArrayList<Point> points, float scale, int speed) {
     stroke(255, 0, 0);
     for (int i=0; i<step; i++) {
-        if (!readyToDraw) break;
-        Point from = path.get(i);
-        Point to = path.get(i+1);
-        line(from.x*pixelsize, from.y*pixelsize, to.x*pixelsize, to.y*pixelsize);
+        try {
+            Point from = path.get(i);
+            Point to = path.get(i+1);
+            line(from.x*pixelsize, from.y*pixelsize, to.x*pixelsize, to.y*pixelsize);
+        } catch (IndexOutOfBoundsException e) {
+            // might happen if starts writing to path
+            // simply stop drawing in that case
+            return;
+        }
     }
     if (!(step + speed > path.size()-1)) {
         step += speed;
