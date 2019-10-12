@@ -6,11 +6,12 @@ int pixelsize = 3;
 ArrayList<Point> path;
 // stuff for animation
 int step = 1;
+boolean inverted = false;
 
 void setup () {
     size(50, 50);
     surface.setResizable(true);
-    input = loadImage("test2.jpg");
+    input = loadImage("test.jpg");
     // make a copy of input
     prepared = input.get(0, 0, input.width, input.height);
     // determine size
@@ -32,13 +33,25 @@ void setup () {
 }
 
 void draw () {
-    // if (step < path.size() - 1){
-    //     image(input, 0,0);
-    // } else {
-    //     background(255);
-    // }
-    // animatedPath(path, pixelsize, 80);
-    displayPath(path, pixelsize);
+    if (step < path.size() - 1){
+        image(input, 0,0);
+    } else {
+        if (inverted) {
+            background(0);
+        } else {
+            background(255);
+        }
+    }
+    animatedPath(path, pixelsize, 120);
+    // displayPath(path, pixelsize);
+}
+
+void mouseClicked () {
+    inverted = mouseY > input.height/2;
+    step = 1;
+    int threshold = (int) map(mouseX, 0, input.width, 0, 255);
+    output = floydSteinberg(prepared, threshold);
+    path = neighborPathFromImage(output);
 }
 
 
@@ -124,11 +137,17 @@ PImage floydSteinberg (PImage in, int threshold) {
 }
 
 ArrayList<Point> neighborPathFromImage (PImage img) {
+    int col;
+    if (inverted) {
+        col = 255;
+    } else {
+        col = 0;
+    }
     // get all black points
     ArrayList<Point> points = new ArrayList<Point>();
     for (int y=0; y<img.height; y++) {
         for (int x=0; x<img.width; x++) {
-            if (brightness(img.pixels[x + y*img.width]) == 0) {
+            if (brightness(img.pixels[x + y*img.width]) == col) {
                 points.add(new Point(x, y));
             }
         }
