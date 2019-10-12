@@ -12,9 +12,16 @@ void setup () {
     input = loadImage("test.jpg");
     // make a copy of output
     output = input.get(0, 0, input.width, input.height);
-    width = 300;
-    output.resize(width, 0);
-    height = output.height;
+    // determine size
+    if (input.height <= input.width) {
+        width = 300;
+        output.resize(width, 0);
+        height = output.height;
+    } else {
+        height = 300;
+        output.resize(0, height);
+        width = output.width;
+    }
     surface.setSize(width*pixelsize, height*pixelsize);
     output.filter(GRAY);
     floydSteinberg(output, 128);
