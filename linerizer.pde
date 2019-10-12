@@ -6,9 +6,10 @@ int pixelsize = 3;
 ArrayList<Point> path;
 // stuff for animation
 int step = 1;
-int speed = 1000;
+int speed = 120;
 boolean inverted = false;
 boolean readyToDraw = true;
+boolean killThreads = true;
 
 void setup () {
     size(50, 50);
@@ -51,6 +52,9 @@ void draw () {
 }
 
 void mouseClicked () {
+    readyToDraw = false;
+    // kill other path-calculating threads if still open
+    killThreads = true;
     inverted = mouseY > input.height/2;
     step = 1;
     int threshold = (int) map(mouseX, 0, input.width, 0, 255);
@@ -73,6 +77,7 @@ void displayPixels (PImage image, int pixelwidth) {
 void animatedPath(ArrayList<Point> points, float scale, int speed) {
     stroke(255, 0, 0);
     for (int i=0; i<step; i++) {
+        if (!readyToDraw) break;
         Point from = path.get(i);
         Point to = path.get(i+1);
         line(from.x*pixelsize, from.y*pixelsize, to.x*pixelsize, to.y*pixelsize);
@@ -165,8 +170,9 @@ void closestNeighborPath (ArrayList<Point> pointList) {
     // writes the list of points folling the nearest neighbor
     // to global path (ArrayList<Point>) variable
     // using linear search
+
+    if (killThreads) killThreads = false;
     // don't start the animated draw, because path is empty right now
-    readyToDraw = false;
     path = new ArrayList<Point>();
     Point current = pointList.get(0);
     pointList.remove(0);
@@ -174,6 +180,7 @@ void closestNeighborPath (ArrayList<Point> pointList) {
         int min = current.square_distance(pointList.get(0));
         int neighborIndex = 0;
         for (int i=0; i<pointList.size()-1; i++) {
+            if (killThreads) return;
             int dist = current.square_distance(pointList.get(i));
             if (dist < min) {
                 min = dist;
