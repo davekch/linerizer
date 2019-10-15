@@ -19,11 +19,11 @@ void setup () {
     prepared = input.get(0, 0, input.width, input.height);
     // determine size
     if (input.height <= input.width) {
-        width = 300;
+        width = 100;
         prepared.resize(width, 0);
         height = prepared.height;
     } else {
-        height = 300;
+        height = 100;
         prepared.resize(0, height);
         width = prepared.width;
     }
