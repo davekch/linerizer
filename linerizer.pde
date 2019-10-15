@@ -1,7 +1,7 @@
 PImage input;
 PImage output;
 int width, height;
-int pixelsize = 3;
+int pixelsize = 7;
 ArrayList<Point> path;
 // stuff for animation
 int step = 1;
@@ -9,10 +9,10 @@ int step = 1;
 void setup () {
     size(50, 50);
     surface.setResizable(true);
-    input = loadImage("test.jpg");
+    input = loadImage("test3.jpg");
     // make a copy of output
     output = input.get(0, 0, input.width, input.height);
-    width = 300;
+    width = 100;
     output.resize(width, 0);
     height = output.height;
     surface.setSize(width*pixelsize, height*pixelsize);
@@ -32,6 +32,12 @@ void draw () {
     animatedPath(path, pixelsize, 80);
 }
 
+void mouseClicked () {
+    if (mouseButton == RIGHT) {
+        saveGCode(path);
+    }
+}
+
 
 void displayPixels (PImage image, int pixelwidth) {
     noStroke();
@@ -46,6 +52,7 @@ void displayPixels (PImage image, int pixelwidth) {
 
 void animatedPath(ArrayList<Point> points, float scale, int speed) {
     stroke(255, 0, 0);
+    strokeWeight(2);
     for (int i=0; i<step; i++) {
         Point from = path.get(i);
         Point to = path.get(i+1);
@@ -159,4 +166,24 @@ class Point {
     int square_distance (Point p) {
         return (x - p.x)*(x - p.x) + (y - p.y)*(y - p.y);
     }
+}
+
+void saveGCode (ArrayList<Point> path) {
+    PrintWriter output = createWriter("drawing.gcode");
+    // set to absolute coordinate mode
+    output.println("G90");
+    // lift pen, go to first point, drop pen
+    output.println("G1 Z5");
+    output.println("G1 X" + path.get(0).x + " Y-" + path.get(0).y);
+    output.println("G1 Z0");
+    // start drawing line along path
+    for (Point p : path) {
+        output.println("G1 X" + p.x + " Y-" + p.y);
+    }
+    // back to starting position
+    output.println("G1 Z5");
+    output.println("G1 X0 Y0");
+    // close file
+    output.flush();
+    output.close();
 }
