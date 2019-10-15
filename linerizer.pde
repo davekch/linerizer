@@ -52,19 +52,17 @@ void draw () {
 }
 
 void mouseClicked () {
-    readyToDraw = false;
-    // kill other path-calculating threads if still open
-    killThreads = true;
-    inverted = mouseY > input.height/2;
-    step = 1;
-    int threshold = (int) map(mouseX, 0, input.width, 0, 255);
-    output = floydSteinberg(prepared, threshold);
-    thread("neighborPathFromImage");
-}
-
-void mouseClicked () {
     if (mouseButton == RIGHT) {
         saveGCode(path);
+    } else {
+        readyToDraw = false;
+        // kill other path-calculating threads if still open
+        killThreads = true;
+        inverted = mouseY > input.height/2;
+        step = 1;
+        int threshold = (int) map(mouseX, 0, input.width, 0, 255);
+        output = floydSteinberg(prepared, threshold);
+        thread("neighborPathFromImage");
     }
 }
 
