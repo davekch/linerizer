@@ -40,9 +40,9 @@ void draw () {
         image(input, 0,0);
     } else {
         if (inverted) {
-            background(0);
+            background(20);
         } else {
-            background(255);
+            background(235);
         }
     }
     if (readyToDraw) {
@@ -75,7 +75,11 @@ void displayPixels (PImage image, int pixelwidth) {
 }
 
 void animatedPath(ArrayList<Point> points, float scale, int speed) {
-    stroke(255, 0, 0);
+    if (inverted) {
+        stroke(235);
+    } else {
+        stroke(20);
+    }
     for (int i=0; i<step; i++) {
         try {
             Point from = path.get(i);
