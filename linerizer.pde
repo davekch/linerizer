@@ -16,13 +16,18 @@ boolean readyToDraw = false;
 boolean killThreads = true;
 
 void setup () {
-    size(50, 50);
+    size(500, 100);
     surface.setResizable(true);
     drop = new SDrop(this);
+    textSize(32);
 }
 
 void draw () {
-    if (path == null) return;
+    if (path == null) {
+        fill(20);
+        text("Drop an image here ...", 10, 60);
+        return;
+    }
     if (step < path.size() - 1){
         if (input != null) image(input, 0,0);
     } else {
