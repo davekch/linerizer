@@ -1,3 +1,7 @@
+import drop.*;
+import java.io.File;
+
+SDrop drop;
 PImage input;
 PImage prepared;
 PImage output;
@@ -8,36 +12,19 @@ ArrayList<Point> path;
 int step = 1;
 int speed = 120;
 boolean inverted = false;
-boolean readyToDraw = true;
+boolean readyToDraw = false;
 boolean killThreads = true;
 
 void setup () {
     size(50, 50);
     surface.setResizable(true);
-    input = loadImage("test.jpg");
-    // make a copy of input
-    prepared = input.get(0, 0, input.width, input.height);
-    // determine size
-    if (input.height <= input.width) {
-        width = 300;
-        prepared.resize(width, 0);
-        height = prepared.height;
-    } else {
-        height = 300;
-        prepared.resize(0, height);
-        width = prepared.width;
-    }
-    surface.setSize(width*pixelsize, height*pixelsize);
-    prepared.filter(GRAY);
-    output = floydSteinberg(prepared, 128);
-    neighborPathFromImage();
-    // scale input
-    input.resize(width*pixelsize, 0);
+    drop = new SDrop(this);
 }
 
 void draw () {
+    if (path == null) return;
     if (step < path.size() - 1){
-        image(input, 0,0);
+        if (input != null) image(input, 0,0);
     } else {
         if (inverted) {
             background(20);
@@ -60,6 +47,32 @@ void mouseClicked () {
     int threshold = (int) map(mouseX, 0, input.width, 0, 255);
     output = floydSteinberg(prepared, threshold);
     thread("neighborPathFromImage");
+}
+
+void dropEvent (DropEvent event) {
+    if (event.isFile() && event.isImage()) {
+        // don't use event.loadImage() because it runs in a seperate thread :(
+        File f = event.file();
+        input = loadImage(f.getAbsolutePath());
+        // make a copy of input
+        prepared = input.get(0, 0, input.width, input.height);
+        // determine size
+        if (input.height <= input.width) {
+            width = 300;
+            prepared.resize(width, 0);
+            height = prepared.height;
+        } else {
+            height = 300;
+            prepared.resize(0, height);
+            width = prepared.width;
+        }
+        surface.setSize(width*pixelsize, height*pixelsize);
+        prepared.filter(GRAY);
+        output = floydSteinberg(prepared, 128);
+        neighborPathFromImage();
+        // scale input
+        input.resize(width*pixelsize, 0);
+    }
 }
 
 
